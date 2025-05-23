@@ -736,16 +736,19 @@ s32 GetHighestLevelInPlayerParty(void)
 
 #include "data/battle_frontier/battle_tower.h"
 
-static void FillBattleTowerTrainerPartyNew(u16 trainerId, u8 level, u8 monCount)
+static void FillBattleTowerTrainerPartyNew(u16 trainerId, u8 level, u8 monCount, u8 difficulty)
 {
     s32 i, j;
     u8 friendship = MAX_FRIENDSHIP;
     u8 bfMonCount;
     u8 randomTowerTrainer = Random() % NUM_BATTLE_TOWER_TRAINERS;
-    const u16 *monSet = gBattleTowerTrainerMons[randomTowerTrainer];
+    const u16 *monSet = NULL;
     u8 abilityNum = 0;
 
     ZeroEnemyPartyMons();
+
+    if (difficulty == BATTLE_FRONTIER_DIFFICULTY_EASY)
+        monSet = gBattleTowerTrainerMonsEasy[randomTowerTrainer];
 
     if (level == 0 && GetHighestLevelInPlayerParty() > 50)
         level = GetHighestLevelInPlayerParty();
@@ -1011,6 +1014,7 @@ void StartSpecialBattle(void)
     u8 transition;
     u8 level = gSpecialVar_0x8000;
     u8 partyLength = gSpecialVar_0x8001;
+    u8 difficulty = gSpecialVar_0x8002;
 
     sSpecialVar_0x8004_Copy = gSpecialVar_0x8004;
     switch (sSpecialVar_0x8004_Copy)
@@ -1056,7 +1060,7 @@ void StartSpecialBattle(void)
         gBattleTypeFlags = (BATTLE_TYPE_BATTLE_TOWER_NEW | BATTLE_TYPE_TRAINER);
         gTrainerBattleOpponent_A = 0;
 
-        FillBattleTowerTrainerPartyNew(gTrainerBattleOpponent_A, level, partyLength);
+        FillBattleTowerTrainerPartyNew(gTrainerBattleOpponent_A, level, partyLength, difficulty);
 
         CreateTask(Task_WaitBT, 1);
         PlayMapChosenOrBattleBGM(0);

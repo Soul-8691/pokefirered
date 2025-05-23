@@ -190,7 +190,7 @@ const u16 sBattleTowerMonsLass[] = {
 };
 
 // Array of pointers to mon sets
-const u16 *const gBattleTowerTrainerMons[NUM_BATTLE_TOWER_TRAINERS] = {
+const u16 *const gBattleTowerTrainerMonsEasy[NUM_BATTLE_TOWER_TRAINERS] = {
     sBattleTowerMonsYoungster,
     sBattleTowerMonsLass
 };
