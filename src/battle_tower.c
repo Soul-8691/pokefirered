@@ -724,7 +724,6 @@ static void FillBattleTowerTrainerPartyNew(u16 trainerId, u8 level, u8 monCount)
     u8 bfMonCount;
     u8 randomTowerTrainer = Random() % NUM_BATTLE_TOWER_TRAINERS;
     const u16 *monSet = gBattleTowerTrainerMons[randomTowerTrainer];
-    u32 otID = 0;
     u8 abilityNum = 0;
 
     ZeroEnemyPartyMons();
@@ -736,7 +735,6 @@ static void FillBattleTowerTrainerPartyNew(u16 trainerId, u8 level, u8 monCount)
     for (bfMonCount = 0; monSet[bfMonCount] != 0xFFFF; bfMonCount++)
         ;
     i = 0;
-    otID = Random32();
     while (i != monCount)
     {
         u16 monId = monSet[Random() % bfMonCount];
