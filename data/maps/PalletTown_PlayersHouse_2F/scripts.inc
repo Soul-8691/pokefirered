@@ -21,7 +21,11 @@ PalletTown_PlayersHouse_2F_FirstWarpIn::
 	end
 
 PalletTown_PlayersHouse_2F_EventScript_NES::
-	msgbox PalletTown_PlayersHouse_2F_Text_PlayedWithNES, MSGBOX_SIGN
+	@ msgbox PalletTown_PlayersHouse_2F_Text_PlayedWithNES, MSGBOX_SIGN
+	setvar VAR_0x8000 100
+	setvar VAR_0x8001 BATTLE_FRONTIER_PARTY_LENGTH_SINGLES_MAX
+	setvar VAR_0x8004 BATTLE_TOWER_TRAINER_BATTLE
+	special StartSpecialBattle
 	end
 
 PalletTown_PlayersHouse_2F_EventScript_Sign::

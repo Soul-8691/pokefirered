@@ -24,6 +24,8 @@
 #include "constants/pokemon.h"
 #include "constants/event_objects.h"
 
+#include "config/battle_frontier.h"
+
 static EWRAM_DATA u16 sSpecialVar_0x8004_Copy = 0;
 
 #define TakeBravoTrainerBattleTowerOffTheAir()
@@ -713,6 +715,78 @@ static void FillBattleTowerTrainerParty(void)
     }
 }
 
+#include "data/battle_frontier/battle_tower.h"
+
+static void FillBattleTowerTrainerPartyNew(u16 trainerId, u8 level, u8 monCount)
+{
+    s32 i, j;
+    u8 friendship = MAX_FRIENDSHIP;
+    u8 bfMonCount;
+    u8 randomTowerTrainer = Random() % NUM_BATTLE_TOWER_TRAINERS;
+    const u16 *monSet = gBattleTowerTrainerMons[randomTowerTrainer];
+    u32 otID = 0;
+
+    ZeroEnemyPartyMons();
+
+    // Regular battle frontier trainer.
+    // Attempt to fill the trainer's party with random Pokémon until 3 have been
+    // successfully chosen. The trainer's party may not have duplicate Pokémon species
+    // or duplicate held items.
+    for (bfMonCount = 0; monSet[bfMonCount] != 0xFFFF; bfMonCount++)
+        ;
+    i = 0;
+    otID = Random32();
+    while (i != monCount)
+    {
+        u16 monId = monSet[Random() % bfMonCount];
+
+        // "High tier" Pokémon are only allowed on open level mode
+        // 20 is not a possible value for level here
+        // if ((level == FRONTIER_MAX_LEVEL_50 || level == 20) && monId > FRONTIER_MONS_HIGH_TIER)
+        //     continue;
+
+        // Ensure this Pokémon species isn't a duplicate.
+        for (j = 0; j < i; j++)
+        {
+            if (GetMonData(&gEnemyParty[j], MON_DATA_SPECIES, NULL) == gBattleFrontierMons[monId].species)
+                break;
+        }
+        if (j != i)
+            continue;
+
+        // Ensure this Pokemon's held item isn't a duplicate.
+        for (j = 0; j < i; j++)
+        {
+            if (GetMonData(&gEnemyParty[j], MON_DATA_HELD_ITEM, NULL) != ITEM_NONE
+             && GetMonData(&gEnemyParty[j], MON_DATA_HELD_ITEM, NULL) == gBattleFrontierMons[monId].heldItem)
+                break;
+        }
+        if (j != i)
+            continue;
+
+        // Place the chosen Pokémon into the trainer's party.
+        CreateMonWithNatureRandomOT(&gEnemyParty[j], gBattleFrontierMons[monId].species, level, USE_RANDOM_IVS, gBattleFrontierMons[monId].nature);
+
+        friendship = MAX_FRIENDSHIP;
+        // Give the chosen Pokémon its specified moves.
+        for (j = 0; j < MAX_MON_MOVES; j++)
+        {
+            SetMonMoveSlot(&gEnemyParty[i], gBattleFrontierMons[monId].moves[j], j);
+            if (gBattleFrontierMons[monId].moves[j] == MOVE_FRUSTRATION)
+                friendship = 0;  // Frustration is more powerful the lower the pokemon's friendship is.
+        }
+
+        SetMonData(&gEnemyParty[i], MON_DATA_FRIENDSHIP, &friendship);
+        SetMonData(&gEnemyParty[i], MON_DATA_HELD_ITEM, &gBattleFrontierMons[monId].heldItem);
+
+        CalculateMonStats(&gEnemyParty[i]);
+
+        // The Pokémon was successfully added to the trainer's party, so it's safe to move on to
+        // the next party slot.
+        i++;
+    }
+}
+
 static u8 AppendBattleTowerBannedSpeciesName(u16 species, u8 count)
 {
     if (GetSetPokedexFlag(SpeciesToNationalPokedexNum(species), FLAG_GET_CAUGHT))
@@ -897,6 +971,8 @@ void StartSpecialBattle(void)
     s32 i;
     u16 heldItem;
     u8 transition;
+    u8 level = gSpecialVar_0x8000;
+    u8 partyLength = gSpecialVar_0x8001;
 
     sSpecialVar_0x8004_Copy = gSpecialVar_0x8004;
     switch (sSpecialVar_0x8004_Copy)
@@ -932,6 +1008,17 @@ void StartSpecialBattle(void)
 
         gBattleTypeFlags = (BATTLE_TYPE_EREADER_TRAINER | BATTLE_TYPE_TRAINER);
         gTrainerBattleOpponent_A = 0;
+
+        CreateTask(Task_WaitBT, 1);
+        PlayMapChosenOrBattleBGM(0);
+        transition = BattleSetup_GetBattleTowerBattleTransition();
+        BattleTransition_StartOnField(transition);
+        break;
+    case BATTLE_TOWER_TRAINER_BATTLE:
+        gBattleTypeFlags = (BATTLE_TYPE_BATTLE_TOWER_NEW | BATTLE_TYPE_TRAINER);
+        gTrainerBattleOpponent_A = 0;
+
+        FillBattleTowerTrainerPartyNew(gTrainerBattleOpponent_A, level, partyLength);
 
         CreateTask(Task_WaitBT, 1);
         PlayMapChosenOrBattleBGM(0);
