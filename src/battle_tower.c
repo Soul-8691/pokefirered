@@ -747,8 +747,10 @@ static void FillBattleTowerTrainerPartyNew(u16 trainerId, u8 level, u8 monCount)
 
     ZeroEnemyPartyMons();
 
-    if (level == 0)
+    if (level == 0 && GetHighestLevelInPlayerParty() > 50)
         level = GetHighestLevelInPlayerParty();
+    else
+        level = 50;
 
     // Regular battle frontier trainer.
     // Attempt to fill the trainer's party with random Pokémon until 3 have been
