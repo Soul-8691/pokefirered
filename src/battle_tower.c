@@ -736,7 +736,7 @@ s32 GetHighestLevelInPlayerParty(void)
 
 #include "data/battle_frontier/battle_tower.h"
 
-static void FillBattleTowerTrainerPartyNew(u16 trainerId, u8 level, u8 monCount, u8 difficulty)
+static void FillBattleTowerTrainerPartyNew(u16 trainerId, u8 level, u8 monCount, u8 difficulty, u8 trainerStruct)
 {
     s32 i, j;
     u8 friendship = MAX_FRIENDSHIP;
@@ -780,30 +780,36 @@ static void FillBattleTowerTrainerPartyNew(u16 trainerId, u8 level, u8 monCount,
         if (j != i)
             continue;
 
-        // Ensure this Pokemon's held item isn't a duplicate.
-        for (j = 0; j < i; j++)
-        {
-            if (GetMonData(&gEnemyParty[j], MON_DATA_HELD_ITEM, NULL) != ITEM_NONE
-             && GetMonData(&gEnemyParty[j], MON_DATA_HELD_ITEM, NULL) == gBattleFrontierMons[monId].heldItem)
-                break;
+        if (trainerStruct == BATTLE_FRONTIER_TRAINER_STRUCT_CUSTOM_ITEMS || trainerStruct == BATTLE_FRONTIER_TRAINER_STRUCT_CUSTOM) {
+            // Ensure this Pokemon's held item isn't a duplicate.
+            for (j = 0; j < i; j++)
+            {
+                if (GetMonData(&gEnemyParty[j], MON_DATA_HELD_ITEM, NULL) != ITEM_NONE
+                && GetMonData(&gEnemyParty[j], MON_DATA_HELD_ITEM, NULL) == gBattleFrontierMons[monId].heldItem)
+                    break;
+            }
+            if (j != i)
+                continue;
         }
-        if (j != i)
-            continue;
 
         // Place the chosen Pokémon into the trainer's party.
         CreateMonWithNatureRandomOT(&gEnemyParty[j], gBattleFrontierMons[monId].species, level, USE_RANDOM_IVS, gBattleFrontierMons[monId].nature);
 
         friendship = MAX_FRIENDSHIP;
-        // Give the chosen Pokémon its specified moves.
-        for (j = 0; j < MAX_MON_MOVES; j++)
-        {
-            SetMonMoveSlot(&gEnemyParty[i], gBattleFrontierMons[monId].moves[j], j);
-            if (gBattleFrontierMons[monId].moves[j] == MOVE_FRUSTRATION)
-                friendship = 0;  // Frustration is more powerful the lower the pokemon's friendship is.
+
+        if (trainerStruct == BATTLE_FRONTIER_TRAINER_STRUCT_CUSTOM_MOVES || trainerStruct == BATTLE_FRONTIER_TRAINER_STRUCT_CUSTOM) {
+            // Give the chosen Pokémon its specified moves.
+            for (j = 0; j < MAX_MON_MOVES; j++)
+            {
+                SetMonMoveSlot(&gEnemyParty[i], gBattleFrontierMons[monId].moves[j], j);
+                if (gBattleFrontierMons[monId].moves[j] == MOVE_FRUSTRATION)
+                    friendship = 0;  // Frustration is more powerful the lower the pokemon's friendship is.
+            }
         }
 
         SetMonData(&gEnemyParty[i], MON_DATA_FRIENDSHIP, &friendship);
-        SetMonData(&gEnemyParty[i], MON_DATA_HELD_ITEM, &gBattleFrontierMons[monId].heldItem);
+        if (trainerStruct == BATTLE_FRONTIER_TRAINER_STRUCT_CUSTOM_ITEMS || trainerStruct == BATTLE_FRONTIER_TRAINER_STRUCT_CUSTOM)
+            SetMonData(&gEnemyParty[i], MON_DATA_HELD_ITEM, &gBattleFrontierMons[monId].heldItem);
 
         if (gBattleFrontierMons[i].ability > 0)
         {
@@ -1015,6 +1021,7 @@ void StartSpecialBattle(void)
     u8 level = gSpecialVar_0x8000;
     u8 partyLength = gSpecialVar_0x8001;
     u8 difficulty = gSpecialVar_0x8002;
+    u8 trainerStruct = gSpecialVar_0x8003;
 
     sSpecialVar_0x8004_Copy = gSpecialVar_0x8004;
     switch (sSpecialVar_0x8004_Copy)
@@ -1060,7 +1067,7 @@ void StartSpecialBattle(void)
         gBattleTypeFlags = (BATTLE_TYPE_BATTLE_TOWER_NEW | BATTLE_TYPE_TRAINER);
         gTrainerBattleOpponent_A = 0;
 
-        FillBattleTowerTrainerPartyNew(gTrainerBattleOpponent_A, level, partyLength, difficulty);
+        FillBattleTowerTrainerPartyNew(gTrainerBattleOpponent_A, level, partyLength, difficulty, trainerStruct);
 
         CreateTask(Task_WaitBT, 1);
         PlayMapChosenOrBattleBGM(0);
