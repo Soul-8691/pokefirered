@@ -5,8 +5,8 @@ struct BattleTowerSpread
     u16 heldItem;
     u8 ability;
     u8 nature;
-    // u8 ivs[NUM_STATS];
-    // u8 evs[NUM_STATS];
+    u8 ivs[NUM_STATS];
+    u8 evs[NUM_STATS];
 };
 
 const struct BattleTowerSpread gBattleFrontierMons[NUM_BATTLE_TOWER_MONS] =

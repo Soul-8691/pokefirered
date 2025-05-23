@@ -790,6 +790,11 @@ static void FillBattleTowerTrainerPartyNew(u16 trainerId, u8 level, u8 monCount)
             SetMonData(&gEnemyParty[i], MON_DATA_ABILITY_NUM, &abilityNum);
         }
 
+        for (j = 0; j < NUM_STATS; j++) {
+            SetMonData(&gEnemyParty[i], MON_DATA_HP_IV + j, &gBattleFrontierMons[i].ivs[j]);
+            SetMonData(&gEnemyParty[i], MON_DATA_HP_EV + j, &gBattleFrontierMons[i].evs[j]);
+        }
+
         CalculateMonStats(&gEnemyParty[i]);
 
         // The Pokémon was successfully added to the trainer's party, so it's safe to move on to
