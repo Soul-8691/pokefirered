@@ -715,6 +715,25 @@ static void FillBattleTowerTrainerParty(void)
     }
 }
 
+s32 GetHighestLevelInPlayerParty(void)
+{
+    s32 highestLevel = 0;
+    s32 i;
+
+    for (i = 0; i < PARTY_SIZE; i++)
+    {
+        if (GetMonData(&gPlayerParty[i], MON_DATA_SPECIES, NULL)
+            && GetMonData(&gPlayerParty[i], MON_DATA_SPECIES_OR_EGG, NULL) != SPECIES_EGG)
+        {
+            s32 level = GetMonData(&gPlayerParty[i], MON_DATA_LEVEL, NULL);
+            if (level > highestLevel)
+                highestLevel = level;
+        }
+    }
+
+    return highestLevel;
+}
+
 #include "data/battle_frontier/battle_tower.h"
 
 static void FillBattleTowerTrainerPartyNew(u16 trainerId, u8 level, u8 monCount)
@@ -727,6 +746,9 @@ static void FillBattleTowerTrainerPartyNew(u16 trainerId, u8 level, u8 monCount)
     u8 abilityNum = 0;
 
     ZeroEnemyPartyMons();
+
+    if (level == 0)
+        level = GetHighestLevelInPlayerParty();
 
     // Regular battle frontier trainer.
     // Attempt to fill the trainer's party with random Pokémon until 3 have been
