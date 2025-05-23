@@ -3,7 +3,7 @@ struct BattleTowerSpread
     u16 species;
     u16 moves[MAX_MON_MOVES];
     u16 heldItem;
-    // u8 ability;
+    u8 ability;
     u8 nature;
     // u8 ivs[NUM_STATS];
     // u8 evs[NUM_STATS];

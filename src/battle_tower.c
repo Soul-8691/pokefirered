@@ -725,6 +725,7 @@ static void FillBattleTowerTrainerPartyNew(u16 trainerId, u8 level, u8 monCount)
     u8 randomTowerTrainer = Random() % NUM_BATTLE_TOWER_TRAINERS;
     const u16 *monSet = gBattleTowerTrainerMons[randomTowerTrainer];
     u32 otID = 0;
+    u8 abilityNum = 0;
 
     ZeroEnemyPartyMons();
 
@@ -778,6 +779,16 @@ static void FillBattleTowerTrainerPartyNew(u16 trainerId, u8 level, u8 monCount)
 
         SetMonData(&gEnemyParty[i], MON_DATA_FRIENDSHIP, &friendship);
         SetMonData(&gEnemyParty[i], MON_DATA_HELD_ITEM, &gBattleFrontierMons[monId].heldItem);
+
+        if (gBattleFrontierMons[i].ability > 0)
+        {
+            if (gSpeciesInfo[gBattleFrontierMons[monId].species].abilities[0] == gBattleFrontierMons[i].ability)
+                abilityNum = 0;
+            else if (gSpeciesInfo[gBattleFrontierMons[monId].species].abilities[1] == gBattleFrontierMons[i].ability)
+                abilityNum = 1;
+
+            SetMonData(&gEnemyParty[i], MON_DATA_ABILITY_NUM, &abilityNum);
+        }
 
         CalculateMonStats(&gEnemyParty[i]);
 
